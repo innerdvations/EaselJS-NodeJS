@@ -31,133 +31,149 @@ this.createjs = this.createjs || {};
 (function () {
 	"use strict";
 
-/**
- * Displays text using bitmap glyphs defined in a sprite sheet. Multi-line text is supported
- * using new line characters, but automatic wrapping is not supported. See the 
- * {{#crossLink "BitmapText/spriteSheet:attribute"}}{{/crossLink}}
- * property for more information on defining glyphs.
- * @class BitmapText
- * @extends DisplayObject
- * @param {String} [text=""] The text to display.
- * @param {SpriteSheet} [spriteSheet=null] The spritesheet that defines the character glyphs.
- * @constructor
- **/
-function BitmapText(text, spriteSheet) {
-	this.initialize(text, spriteSheet);
-}
-var p = BitmapText.prototype = new createjs.DisplayObject();
 
-// static properties:
-
-// events:
-
-// public properties:
-	/**
-	 * The text to display.
-	 * @property text
-	 * @type String
-	 * @default ""
-	 **/
-	p.text = "";
-	
-	/**
-	 * A SpriteSheet instance that defines the glyphs for this bitmap text. Each glyph/character
-	 * should have a single frame animation defined in the sprite sheet named the same as
-	 * corresponding character. For example, the following animation definition:
-	 *
-	 * 		"A": {frames: [0]}
-	 *
-	 * would indicate that the frame at index 0 of the spritesheet should be drawn for the "A" character. The short form
-	 * is also acceptable:
-	 * 
-	 * 		"A": 0
-	 *
-	 * Note that if a character in the text is not found in the sprite sheet, it will also
-	 * try to use the alternate case (upper or lower).
-	 *
-	 * See SpriteSheet for more information on defining sprite sheet data.
-	 * @property spriteSheet
-	 * @type String
-	 * @default null
-	 **/
-	p.spriteSheet = null;
-
-	/**
-	 * The height of each line of text. If 0, then it will use a line height calculated
-	 * by checking for the height of the "1", "T", or "L" character (in that order). If
-	 * those characters are not defined, it will use the height of the first frame of the
-	 * sprite sheet.
-	 * @property lineHeight
-	 * @type Number
-	 * @default 0
-	 **/
-	p.lineHeight = 0;
-
-	/**
-	 * This spacing (in pixels) will be added after each character in the output.
-	 * @property letterSpacing
-	 * @type Number
-	 * @default 0
-	 **/
-	p.letterSpacing = 0;
-
-	/**
-	 * If a space character is not defined in the sprite sheet, then empty pixels equal to
-	 * spaceWidth will be inserted instead. If  0, then it will use a value calculated
-	 * by checking for the width of the "1", "E", or "A" character (in that order). If
-	 * those characters are not defined, it will use the width of the first frame of the
-	 * sprite sheet.
-	 * @property spaceWidth
-	 * @type Number
-	 * @default 0
-	 **/
-	p.spaceWidth = 0;
-	
-// private properties:
-	
 // constructor:
 	/**
-	 * @property DisplayObject_initialize
-	 * @type Function
-	 * @protected
-	 **/
-	p.DisplayObject_initialize = p.initialize;
-	
-	/**
-	 * Initialization method.
-	 * @method initialize
+	 * Displays text using bitmap glyphs defined in a sprite sheet. Multi-line text is supported
+	 * using new line characters, but automatic wrapping is not supported. See the 
+	 * {{#crossLink "BitmapText/spriteSheet:property"}}{{/crossLink}}
+	 * property for more information on defining glyphs.
+	 * 
+	 * <strong>Important:</strong> BitmapText extends Container, but is not designed to be used as one.
+	 * As such, methods like addChild and removeChild are disabled.
+	 * @class BitmapText
+	 * @extends DisplayObject
 	 * @param {String} [text=""] The text to display.
 	 * @param {SpriteSheet} [spriteSheet=null] The spritesheet that defines the character glyphs.
-	 * @protected
+	 * @constructor
 	 **/
-	p.initialize = function (text, spriteSheet) {
-		this.DisplayObject_initialize();
-
-		this.text = text;
+	function BitmapText(text, spriteSheet) {
+		this.Container_constructor();
+		
+		
+	// public properties:
+		/**
+		 * The text to display.
+		 * @property text
+		 * @type String
+		 * @default ""
+		 **/
+		this.text = text||"";
+		
+		/**
+		 * A SpriteSheet instance that defines the glyphs for this bitmap text. Each glyph/character
+		 * should have a single frame animation defined in the sprite sheet named the same as
+		 * corresponding character. For example, the following animation definition:
+		 *
+		 * 		"A": {frames: [0]}
+		 *
+		 * would indicate that the frame at index 0 of the spritesheet should be drawn for the "A" character. The short form
+		 * is also acceptable:
+		 * 
+		 * 		"A": 0
+		 *
+		 * Note that if a character in the text is not found in the sprite sheet, it will also
+		 * try to use the alternate case (upper or lower).
+		 *
+		 * See SpriteSheet for more information on defining sprite sheet data.
+		 * @property spriteSheet
+		 * @type SpriteSheet
+		 * @default null
+		 **/
 		this.spriteSheet = spriteSheet;
-	};
+	
+		/**
+		 * The height of each line of text. If 0, then it will use a line height calculated
+		 * by checking for the height of the "1", "T", or "L" character (in that order). If
+		 * those characters are not defined, it will use the height of the first frame of the
+		 * sprite sheet.
+		 * @property lineHeight
+		 * @type Number
+		 * @default 0
+		 **/
+		this.lineHeight = 0;
+	
+		/**
+		 * This spacing (in pixels) will be added after each character in the output.
+		 * @property letterSpacing
+		 * @type Number
+		 * @default 0
+		 **/
+		this.letterSpacing = 0;
+	
+		/**
+		 * If a space character is not defined in the sprite sheet, then empty pixels equal to
+		 * spaceWidth will be inserted instead. If 0, then it will use a value calculated
+		 * by checking for the width of the "1", "l", "E", or "A" character (in that order). If
+		 * those characters are not defined, it will use the width of the first frame of the
+		 * sprite sheet.
+		 * @property spaceWidth
+		 * @type Number
+		 * @default 0
+		 **/
+		this.spaceWidth = 0;
+		
+		
+	// private properties:
+	 	/**
+		 * @property _oldProps
+		 * @type Object
+		 * @protected
+		 **/
+		this._oldProps = {text:0,spriteSheet:0,lineHeight:0,letterSpacing:0,spaceWidth:0};
+	}
+	var p = createjs.extend(BitmapText, createjs.Container);
+
+	/**
+	 * <strong>REMOVED</strong>. Removed in favor of using `MySuperClass_constructor`.
+	 * See {{#crossLink "Utility Methods/extend"}}{{/crossLink}} and {{#crossLink "Utility Methods/promote"}}{{/crossLink}}
+	 * for details.
+	 *
+	 * There is an inheritance tutorial distributed with EaselJS in /tutorials/Inheritance.
+	 *
+	 * @method initialize
+	 * @protected
+	 * @deprecated
+	 */
+	// p.initialize = function() {}; // searchable for devs wondering where it is.
+
+// static properties:
+	/**
+	 * BitmapText uses Sprite instances to draw text. To reduce the creation and destruction of instances (and thus garbage collection), it maintains
+	 * an internal object pool of sprite instances to reuse. Increasing this value can cause more sprites to be
+	 * retained, slightly increasing memory use, but reducing instantiation.
+	 * @property maxPoolSize
+	 * @type Number
+	 * @static
+	 * @default 100
+	 **/
+	BitmapText.maxPoolSize = 100;
+	
+	/**
+	 * Sprite object pool.
+	 * @type {Array}
+	 * @static
+	 * @private
+	 */
+	BitmapText._spritePool = [];
+
 	
 // public methods:
 	/**
-	 * @property DisplayObject_draw
-	 * @type Function
-	 * @protected
-	 **/
-	p.DisplayObject_draw = p.draw;
-	
-	/**
-	 * Draws the display object into the specified context ignoring it's visible, alpha, shadow, and transform.
-	 * Returns true if the draw was handled (useful for overriding functionality).
-	 * NOTE: This method is mainly for internal use, though it may be useful for advanced uses.
-	 * @method draw
-	 * @param {CanvasRenderingContext2D} ctx The canvas 2D context object to draw into.
-	 * @param {Boolean} ignoreCache Indicates whether the draw operation should ignore any current cache.
-	 * For example, used for drawing the cache (to prevent it from simply drawing an existing cache back
-	 * into itself).
+	 * Docced in superclass.
 	 **/
 	p.draw = function(ctx, ignoreCache) {
-		if (this.DisplayObject_draw(ctx, ignoreCache)) { return true; }
-		this._drawText(ctx);
+		if (this.DisplayObject_draw(ctx, ignoreCache)) { return; }
+		this._updateText();
+		this.Container_draw(ctx, ignoreCache);
+	};
+	
+	/**
+	 * Docced in superclass.
+	 **/
+	p.getBounds = function() {
+		this._updateText();
+		return this.Container_getBounds();
 	};
 	
 	/**
@@ -169,47 +185,93 @@ var p = BitmapText.prototype = new createjs.DisplayObject();
 	 **/
 	p.isVisible = function() {
 		var hasContent = this.cacheCanvas || (this.spriteSheet && this.spriteSheet.complete && this.text);
-		return !!(this.visible && this.alpha > 0 && this.scaleX != 0 && this.scaleY != 0 && hasContent);
+		return !!(this.visible && this.alpha > 0 && this.scaleX !== 0 && this.scaleY !== 0 && hasContent);
+	};
+	
+	p.clone = function() {
+		return this._cloneProps(new BitmapText(this.text, this.spriteSheet));
 	};
 	
 	/**
-	 * Docced in superclass.
-	 */
-	p.getBounds = function() {
-		var bounds = this._rectangle;
-		this._drawText(null, bounds);
-		return bounds.width ? bounds : null;
-	};
+	 * <strong>Disabled in BitmapText.</strong>
+	 * @method addChild
+	 **/
+	/**
+	 * <strong>Disabled in BitmapText.</strong>
+	 * @method addChildAt
+	 **/
+	/**
+	 * <strong>Disabled in BitmapText.</strong>
+	 * @method removeChild
+	 **/
+	/**
+	 * <strong>Disabled in BitmapText.</strong>
+	 * @method removeChildAt
+	 **/
+	/**
+	 * <strong>Disabled in BitmapText.</strong>
+	 * @method removeAllChildren
+	 **/
+	p.addChild = p.addChildAt = p.removeChild = p.removeChildAt = p.removeAllChildren = function() {};
+
 
 // private methods:
-	/**
-	 * @method _getFrame
-	 * @param {String} character
-	 * @param {SpriteSheet} spriteSheet
+ 	/**
+	 * @method _cloneProps
+	 * @param {BitmapText} o
+	 * @return {BitmapText} o
 	 * @protected
 	 **/
-	p._getFrame = function(character, spriteSheet) {
+	p._cloneProps = function(o) {
+		this.Container__cloneProps(o);
+		o.lineHeight = this.lineHeight;
+		o.letterSpacing = this.letterSpacing;
+		o.spaceWidth = this.spaceWidth;
+		return o;
+	};
+	
+	/**
+	 * @method _getFrameIndex
+	 * @param {String} character
+	 * @param {SpriteSheet} spriteSheet
+	 * @return {Number}
+	 * @protected
+	 **/
+	p._getFrameIndex = function(character, spriteSheet) {
 		var c, o = spriteSheet.getAnimation(character);
 		if (!o) {
 			(character != (c = character.toUpperCase())) || (character != (c = character.toLowerCase())) || (c=null);
 			if (c) { o = spriteSheet.getAnimation(c); }
 		}
-		return o && spriteSheet.getFrame(o.frames[0]);
+		return o && o.frames[0];
+	};
+	
+	/**
+	 * @method _getFrame
+	 * @param {String} character
+	 * @param {SpriteSheet} spriteSheet
+	 * @return {Object}
+	 * @protected
+	 **/
+	p._getFrame = function(character, spriteSheet) {
+		var index = this._getFrameIndex(character, spriteSheet);
+		return index == null ? index : spriteSheet.getFrame(index);
 	};
 	
 	/**
 	 * @method _getLineHeight
 	 * @param {SpriteSheet} ss
+	 * @return {Number}
 	 * @protected
 	 **/
 	p._getLineHeight = function(ss) {
 		var frame = this._getFrame("1",ss) || this._getFrame("T",ss) || this._getFrame("L",ss) || ss.getFrame(0);
 		return frame ? frame.rect.height : 1;
 	};
-	
 	/**
 	 * @method _getSpaceWidth
 	 * @param {SpriteSheet} ss
+	 * @return {Number}
 	 * @protected
 	 **/
 	p._getSpaceWidth = function(ss) {
@@ -219,47 +281,63 @@ var p = BitmapText.prototype = new createjs.DisplayObject();
 	
 	/**
 	 * @method _drawText
-	 * @param {CanvasRenderingContext2D} ctx
-	 * @param {Object | Rectangle} bounds
 	 * @protected
 	 **/
-	p._drawText = function(ctx, bounds) {
-		var w, h, rx, x=0, y=0, spaceW=this.spaceWidth, lineH=this.lineHeight, ss=this.spriteSheet;
-				
-		var hasSpace = !!this._getFrame(" ", ss);
-		if (!hasSpace && spaceW==0) { spaceW = this._getSpaceWidth(ss); }
-		if (lineH==0) { lineH = this._getLineHeight(ss); }
+	p._updateText = function() {
+		var x=0, y=0, o=this._oldProps, change=false, spaceW=this.spaceWidth, lineH=this.lineHeight, ss=this.spriteSheet;
+		var pool=BitmapText._spritePool, kids=this.children, childIndex=0, numKids=kids.length, sprite;
 		
-		var maxX = 0;
+		for (var n in o) {
+			if (o[n] != this[n]) {
+				o[n] = this[n];
+				change = true;
+			}
+		}
+		if (!change) { return; }
+		
+		var hasSpace = !!this._getFrame(" ", ss);
+		if (!hasSpace && !spaceW) { spaceW = this._getSpaceWidth(ss); }
+		if (!lineH) { lineH = this._getLineHeight(ss); }
+		
 		for(var i=0, l=this.text.length; i<l; i++) {
 			var character = this.text.charAt(i);
-			if (!hasSpace && character == " ") {
+			if (character == " " && !hasSpace) {
 				x += spaceW;
 				continue;
 			} else if (character=="\n" || character=="\r") {
 				if (character=="\r" && this.text.charAt(i+1) == "\n") { i++; } // crlf
-				if (x-rx > maxX) { maxX = x-rx; }
 				x = 0;
 				y += lineH;
 				continue;
 			}
 
-			var o = this._getFrame(character, ss);
-			if (!o) { continue; }
-			var rect = o.rect;
-			rx = o.regX;
-			w = rect.width;
-			ctx&&ctx.drawImage(o.image, rect.x, rect.y, w, h=rect.height, x-rx, y-o.regY, w, h);
+			var index = this._getFrameIndex(character, ss);
+			if (index == null) { continue; }
 			
-			x += w + this.letterSpacing;
+			if (childIndex < numKids) {
+				sprite = kids[childIndex];
+			} else {
+				kids.push(sprite = pool.length ? pool.pop() : new createjs.Sprite());
+				sprite.parent = this;
+				numKids++;
+			}
+			sprite.spriteSheet = ss;
+			sprite.gotoAndStop(index);
+			sprite.x = x;
+			sprite.y = y;
+			childIndex++;
+			
+			x += sprite.getBounds().width + this.letterSpacing;
 		}
-		if (x-rx > maxX) { maxX = x-rx; }
-		
-		if (bounds) {
-			bounds.width = maxX-this.letterSpacing;
-			bounds.height = y+lineH;
+		while (numKids > childIndex) {
+			 // faster than removeChild.
+			pool.push(sprite = kids.pop());
+			sprite.parent = null;
+			numKids--;
 		}
+		if (pool.length > BitmapText.maxPoolSize) { pool.length = BitmapText.maxPoolSize; }
 	};
 
-	createjs.BitmapText = BitmapText;
+
+	createjs.BitmapText = createjs.promote(BitmapText, "Container");
 }());

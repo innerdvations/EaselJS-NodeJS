@@ -3,7 +3,7 @@
 * Visit http://createjs.com/ for documentation, updates and examples.
 *
 * Copyright (c) 2010 gskinner.com, inc.
-* 
+*
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
 * files (the "Software"), to deal in the Software without
@@ -12,10 +12,10 @@
 * copies of the Software, and to permit persons to whom the
 * Software is furnished to do so, subject to the following
 * conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -26,27 +26,36 @@
 * OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/**
+* @module TweenJS
+*/
+
 // namespace:
 this.createjs = this.createjs||{};
 
 (function() {
-/**
- * A TweenJS plugin for working with numeric CSS string properties (ex. top, left). To use simply install after
- * TweenJS has loaded:
- *
- *      createjs.CSSPlugin.install();
- *
- * You can adjust the CSS properties it will work with by modifying the <code>cssSuffixMap</code> property. Currently,
- * the top, left, bottom, right, width, height have a "px" suffix appended.
- * @class CSSPlugin
- * @constructor
- **/
-var CSSPlugin = function() {
-  throw("CSSPlugin cannot be instantiated.")
-}
-	
-// static interface:
-	/** 
+	"use strict";
+
+	/**
+	 * A TweenJS plugin for working with numeric CSS string properties (ex. top, left). To use simply install after
+	 * TweenJS has loaded:
+	 *
+	 *      createjs.CSSPlugin.install();
+	 *
+	 * You can adjust the CSS properties it will work with by modifying the <code>cssSuffixMap</code> property. Currently,
+	 * the top, left, bottom, right, width, height have a "px" suffix appended.
+	 *
+	 * Please note that the CSS Plugin is not included in the TweenJS minified file.
+	 * @class CSSPlugin
+	 * @constructor
+	 **/
+	function CSSPlugin() {
+		throw("CSSPlugin cannot be instantiated.")
+	}
+
+
+// static properties
+	/**
 	 * Defines the default suffix map for CSS tweens. This can be overridden on a per tween basis by specifying a
 	 * cssSuffixMap value for the individual tween. The object maps CSS property names to the suffix to use when
 	 * reading or setting those properties. For example a map in the form {top:"px"} specifies that when tweening
@@ -57,7 +66,7 @@ var CSSPlugin = function() {
 	 * @static
 	 **/
 	CSSPlugin.cssSuffixMap = {top:"px",left:"px",bottom:"px",right:"px",width:"px",height:"px",opacity:""};
-	
+
 	/**
 	 * @property priority
 	 * @protected
@@ -65,6 +74,8 @@ var CSSPlugin = function() {
 	 **/
 	CSSPlugin.priority = -100; // very low priority, should run last
 
+
+// static methods
 	/**
 	 * Installs this plugin for use with TweenJS. Call this once after TweenJS is loaded to enable this plugin.
 	 * @method install
@@ -75,8 +86,7 @@ var CSSPlugin = function() {
 		for (var n in map) { arr.push(n); }
 		createjs.Tween.installPlugin(CSSPlugin, arr);
 	}
-	
-	
+
 	/**
 	 * @method init
 	 * @protected
@@ -94,7 +104,7 @@ var CSSPlugin = function() {
 			return parseInt(str.substr(0,i));
 		}
 	}
-	
+
 	/**
 	 * @method step
 	 * @protected
@@ -103,8 +113,7 @@ var CSSPlugin = function() {
 	CSSPlugin.step = function(tween, prop, startValue, endValue, injectProps) {
 		// unused
 	}
-	
-	
+
 	/**
 	 * @method tween
 	 * @protected
@@ -117,16 +126,6 @@ var CSSPlugin = function() {
 		return createjs.Tween.IGNORE;
 	}
 
-// public properties:
+	createjs.CSSPlugin = CSSPlugin;
 
-// private properties:
-	
-// constructor:
-	
-// public methods:
-
-
-// private methods:
-	
-createjs.CSSPlugin = CSSPlugin;
 }());

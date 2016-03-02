@@ -34,88 +34,73 @@
 this.createjs = this.createjs||{};
 
 (function() {
-
-/**
- * A Bitmap represents an Image, Canvas, or Video in the display list. A Bitmap can be instantiated using an existing
- * HTML element, or a string.
- *
- * <h4>Example</h4>
- *      var bitmap = new createjs.Bitmap("imagePath.jpg");
- *
- * <strong>Notes:</strong>
- * <ol>
- *     <li>When a string path or image tag that is not yet loaded is used, the stage may need to be redrawn before it
- *      will be displayed.</li>
- *     <li>Bitmaps with an SVG source currently will not respect an alpha value other than 0 or 1. To get around this,
- *     the Bitmap can be cached.</li>
- *     <li>Bitmaps with an SVG source will taint the canvas with cross-origin data, which prevents interactivity. This
- *     happens in all browsers except recent Firefox builds.</li>
- * </ol>
- *
- * @class Bitmap
- * @extends DisplayObject
- * @constructor
- * @param {Image | HTMLCanvasElement | HTMLVideoElement | String} imageOrUri The source object or URI to an image to
- * display. This can be either an Image, Canvas, or Video object, or a string URI to an image file to load and use.
- * If it is a URI, a new Image object will be constructed and assigned to the .image property.
- **/
-var Bitmap = function(imageOrUri) {
-  this.initialize(imageOrUri);
-};
-var p = Bitmap.prototype = new createjs.DisplayObject();
-
-// public properties:
-	/**
-	 * The image to render. This can be an Image, a Canvas, or a Video.
-	 * @property image
-	 * @type Image | HTMLCanvasElement | HTMLVideoElement
-	 **/
-	p.image = null;
 	
 	/**
-	 * Whether or not the Bitmap should be draw to the canvas at whole pixel coordinates.
-	 * @property snapToPixel
-	 * @type Boolean
-	 * @default true
-	 **/
-	p.snapToPixel = true;
-
-	/**
-	 * Specifies an area of the source image to draw. If omitted, the whole image will be drawn.
-	 * @property sourceRect
-	 * @type Rectangle
-	 * @default null
-	 */
-	p.sourceRect = null;
-	
-	// constructor:
-
-	/**
-	 * @property DisplayObject_initialize
-	 * @type Function
-	 * @private
-	 **/
-	p.DisplayObject_initialize = p.initialize;
-
-	/** 
-	 * Initialization method.
-	 * @method initialize
-	 * @param {Image | HTMLCanvasElement | HTMLVideoElement | String} imageOrUri The source object or URI to an image to
+	 * A Bitmap represents an Image, Canvas, or Video in the display list. A Bitmap can be instantiated using an existing
+	 * HTML element, or a string.
+	 *
+	 * <h4>Example</h4>
+	 *
+	 *      var bitmap = new createjs.Bitmap("imagePath.jpg");
+	 *
+	 * <strong>Notes:</strong>
+	 * <ol>
+	 *     <li>When a string path or image tag that is not yet loaded is used, the stage may need to be redrawn before it
+	 *      will be displayed.</li>
+	 *     <li>Bitmaps with an SVG source currently will not respect an alpha value other than 0 or 1. To get around this,
+	 *     the Bitmap can be cached.</li>
+	 *     <li>Bitmaps with an SVG source will taint the canvas with cross-origin data, which prevents interactivity. This
+	 *     happens in all browsers except recent Firefox builds.</li>
+	 *     <li>Images loaded cross-origin will throw cross-origin security errors when interacted with using a mouse, using
+	 *     methods such as `getObjectUnderPoint`, or using filters, or caching. You can get around this by setting
+	 *     `crossOrigin` flags on your images before passing them to EaselJS, eg: `img.crossOrigin="Anonymous";`</li>
+	 * </ol>
+	 *
+	 * @class Bitmap
+	 * @extends DisplayObject
+	 * @constructor
+	 * @param {HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | String} imageOrUri The source object or URI to an image to
 	 * display. This can be either an Image, Canvas, or Video object, or a string URI to an image file to load and use.
-	 * If it is a URI, a new Image object will be constructed and assigned to the `.image` property.
-	 * @protected
+	 * If it is a URI, a new Image object will be constructed and assigned to the .image property.
 	 **/
-	p.initialize = function(imageOrUri) {
-		this.DisplayObject_initialize();
+	function Bitmap(imageOrUri) {
+		this.DisplayObject_constructor();
+		
+		
+	// public properties:
+		/**
+		 * The image to render. This can be an Image, a Canvas, or a Video. Not all browsers (especially
+		 * mobile browsers) support drawing video to a canvas.
+		 * @property image
+		 * @type HTMLImageElement | HTMLCanvasElement | HTMLVideoElement
+		 **/
 		if (typeof imageOrUri == "string") {
-			this.image = new Image();
+			this.image = document.createElement("img");
 			this.image.src = imageOrUri;
 		} else {
 			this.image = imageOrUri;
 		}
-	};
+	
+		/**
+		 * Specifies an area of the source image to draw. If omitted, the whole image will be drawn.
+		 * Note that video sources must have a width / height set to work correctly with `sourceRect`.
+		 * @property sourceRect
+		 * @type Rectangle
+		 * @default null
+		 */
+		this.sourceRect = null;
+	}
+	var p = createjs.extend(Bitmap, createjs.DisplayObject);
+	
 	
 // public methods:
+	/**
+	 * Constructor alias for backwards compatibility. This method will be removed in future versions.
+	 * Subclasses should be updated to use {{#crossLink "Utility Methods/extends"}}{{/crossLink}}.
+	 * @method initialize
+	 * @deprecated in favour of `createjs.promote()`
+	 **/
+	p.initialize = Bitmap; // TODO: deprecated.
 
 	/**
 	 * Returns true or false indicating whether the display object would be visible if drawn to a canvas.
@@ -126,16 +111,10 @@ var p = Bitmap.prototype = new createjs.DisplayObject();
 	 * @return {Boolean} Boolean indicating whether the display object would be visible if drawn to a canvas
 	 **/
 	p.isVisible = function() {
-		var hasContent = this.cacheCanvas || (this.image && (this.image.complete || this.image.getContext || this.image.readyState >= 2));
+		var image = this.image;
+		var hasContent = this.cacheCanvas || (image && (image.naturalWidth || image.getContext || image.readyState >= 2));
 		return !!(this.visible && this.alpha > 0 && this.scaleX != 0 && this.scaleY != 0 && hasContent);
 	};
-
-	/**
-	 * @property DisplayObject_draw
-	 * @type Function
-	 * @protected
-	 **/
-	p.DisplayObject_draw = p.draw;
 
 	/**
 	 * Draws the display object into the specified context ignoring its visible, alpha, shadow, and transform.
@@ -144,17 +123,24 @@ var p = Bitmap.prototype = new createjs.DisplayObject();
 	 * NOTE: This method is mainly for internal use, though it may be useful for advanced uses.
 	 * @method draw
 	 * @param {CanvasRenderingContext2D} ctx The canvas 2D context object to draw into.
-	 * @param {Boolean} ignoreCache Indicates whether the draw operation should ignore any current cache.
+	 * @param {Boolean} [ignoreCache=false] Indicates whether the draw operation should ignore any current cache.
 	 * For example, used for drawing the cache (to prevent it from simply drawing an existing cache back
 	 * into itself).
+	 * @return {Boolean}
 	 **/
 	p.draw = function(ctx, ignoreCache) {
-		if (this.DisplayObject_draw(ctx, ignoreCache)) { return true; }
-		var rect = this.sourceRect;
+		if (this.DisplayObject_draw(ctx, ignoreCache) || !this.image) { return true; }
+		var img = this.image, rect = this.sourceRect;
 		if (rect) {
-			ctx.drawImage(this.image, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height);
+			// some browsers choke on out of bound values, so we'll fix them:
+			var x1 = rect.x, y1 = rect.y, x2 = x1 + rect.width, y2 = y1 + rect.height, x = 0, y = 0, w = img.width, h = img.height;
+			if (x1 < 0) { x -= x1; x1 = 0; }
+			if (x2 > w) { x2 = w; }
+			if (y1 < 0) { y -= y1; y1 = 0; }
+			if (y2 > h) { y2 = h; }
+			ctx.drawImage(img, x1, y1, x2-x1, y2-y1, x, y, x2-x1, y2-y1);
 		} else {
-			ctx.drawImage(this.image, 0, 0);
+			ctx.drawImage(img, 0, 0);
 		}
 		return true;
 	};
@@ -191,13 +177,6 @@ var p = Bitmap.prototype = new createjs.DisplayObject();
 	 * method.
 	 * @method uncache
 	 **/
-	 
-	/**
-	 * @property DisplayObject_getBounds
-	 * @type Function
-	 * @protected
-	 **/
-	p.DisplayObject_getBounds = p.getBounds;
 
 	/**
 	 * Docced in superclass.
@@ -205,9 +184,9 @@ var p = Bitmap.prototype = new createjs.DisplayObject();
 	p.getBounds = function() {
 		var rect = this.DisplayObject_getBounds();
 		if (rect) { return rect; }
-		var o = this.sourceRect || this.image;
-		var hasContent = (this.image && (this.image.complete || this.image.getContext || this.image.readyState >= 2));
-		return hasContent ? this._rectangle.initialize(0, 0, o.width, o.height) : null;
+		var image = this.image, o = this.sourceRect || image;
+		var hasContent = (image && (image.naturalWidth || image.getContext || image.readyState >= 2));
+		return hasContent ? this._rectangle.setValues(0, 0, o.width, o.height) : null;
 	};
 	
 	/**
@@ -218,7 +197,7 @@ var p = Bitmap.prototype = new createjs.DisplayObject();
 	p.clone = function() {
 		var o = new Bitmap(this.image);
 		if (this.sourceRect) { o.sourceRect = this.sourceRect.clone(); }
-		this.cloneProps(o);
+		this._cloneProps(o);
 		return o;
 	};
 	
@@ -231,7 +210,6 @@ var p = Bitmap.prototype = new createjs.DisplayObject();
 		return "[Bitmap (name="+  this.name +")]";
 	};
 
-// private methods:
-
-createjs.Bitmap = Bitmap;
+	
+	createjs.Bitmap = createjs.promote(Bitmap, "DisplayObject");
 }());

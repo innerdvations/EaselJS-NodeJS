@@ -36,61 +36,80 @@ this.createjs = this.createjs||{};
 (function() {
 	"use strict";
 
-/**
- * Represents a point on a 2 dimensional x / y coordinate system.
- *
- * <h4>Example</h4>
- *      var point = new Point(0, 100);
- *
- * @class Point
- * @param {Number} [x=0] X position.
- * @param {Number} [y=0] Y position.
- * @constructor
- **/
-var Point = function(x, y) {
-  this.initialize(x, y);
-};
-var p = Point.prototype;
-
-// public properties:
-
-	/**
-	 * X position.
-	 * @property x
-	 * @type Number
-	 **/
-	p.x = 0;
-
-	/**
-	 * Y position.
-	 * @property y
-	 * @type Number
-	 **/
-	p.y = 0;
 
 // constructor:
-	/** 
-	 * Initialization method. Can also be used to reinitialize the instance.
+	/**
+	 * Represents a point on a 2 dimensional x / y coordinate system.
+	 *
+	 * <h4>Example</h4>
+	 * 
+	 *      var point = new createjs.Point(0, 100);
+	 * 
+	 * @class Point
+	 * @param {Number} [x=0] X position.
+	 * @param {Number} [y=0] Y position.
+	 * @constructor
+	 **/
+	function Point(x, y) {
+	 	this.setValues(x, y);
+	 	
+	 	
+	// public properties:
+		// assigned in the setValues method.
+		/**
+		 * X position.
+		 * @property x
+		 * @type Number
+		 **/
+	
+		/**
+		 * Y position.
+		 * @property y
+		 * @type Number
+		 **/
+	}
+	var p = Point.prototype;
+
+	/**
+	 * <strong>REMOVED</strong>. Removed in favor of using `MySuperClass_constructor`.
+	 * See {{#crossLink "Utility Methods/extend"}}{{/crossLink}} and {{#crossLink "Utility Methods/promote"}}{{/crossLink}}
+	 * for details.
+	 *
+	 * There is an inheritance tutorial distributed with EaselJS in /tutorials/Inheritance.
+	 *
 	 * @method initialize
+	 * @protected
+	 * @deprecated
+	 */
+	// p.initialize = function() {}; // searchable for devs wondering where it is.
+
+	
+// public methods:
+	/** 
+	 * Sets the specified values on this instance.
+	 * @method setValues
 	 * @param {Number} [x=0] X position.
 	 * @param {Number} [y=0] Y position.
 	 * @return {Point} This instance. Useful for chaining method calls.
+	 * @chainable
 	*/
-	p.initialize = function(x, y) {
-		this.x = (x == null ? 0 : x);
-		this.y = (y == null ? 0 : y);
+	p.setValues = function(x, y) {
+		this.x = x||0;
+		this.y = y||0;
 		return this;
 	};
 	
-// public methods:
 	/**
 	 * Copies all properties from the specified point to this point.
 	 * @method copy
 	 * @param {Point} point The point to copy properties from.
 	 * @return {Point} This point. Useful for chaining method calls.
+	 * @chainable
 	*/
 	p.copy = function(point) {
-		return this.initialize(point.x, point.y);
+		this.x = point.x;
+		this.y = point.y;
+		return this;
 	};
 	
 	/**
@@ -111,5 +130,6 @@ var p = Point.prototype;
 		return "[Point (x="+this.x+" y="+this.y+")]";
 	};
 	
-createjs.Point = Point;
+	
+	createjs.Point = Point;
 }());

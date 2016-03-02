@@ -36,6 +36,8 @@ this.createjs = this.createjs || {};
 (function () {
 	"use strict";
 
+
+// constructor:
 	/**
 	 * Applies the alpha from the mask image (or canvas) to the target, such that the alpha channel of the result will
 	 * be derived from the mask, and the RGB channels will be copied from the target. This can be used, for example, to
@@ -62,30 +64,26 @@ this.createjs = this.createjs || {};
 	 * @class AlphaMaskFilter
 	 * @extends Filter
 	 * @constructor
-	 * @param {Image} mask
+	 * @param {HTMLImageElement|HTMLCanvasElement} mask
 	 **/
-	var AlphaMaskFilter = function (mask) {
-		this.initialize(mask);
-	}
-	var p = AlphaMaskFilter.prototype = new createjs.Filter();
-
-// constructor:
-	/** @ignore */
-	p.initialize = function (mask) {
+	function AlphaMaskFilter(mask) {
+	
+	
+	// public properties:
+		/**
+		 * The image (or canvas) to use as the mask.
+		 * @property mask
+		 * @type HTMLImageElement|HTMLCanvasElement
+		 **/
 		this.mask = mask;
 	}
+	var p = createjs.extend(AlphaMaskFilter, createjs.Filter);
 
-// public properties:
-
-	/**
-	 * The image (or canvas) to use as the mask.
-	 * @property mask
-	 * @type Image
-	 **/
-	p.mask = null;
+	// TODO: deprecated
+	// p.initialize = function() {}; // searchable for devs wondering where it is. REMOVED. See docs for details.
+	
 
 // public methods:
-
 	/**
 	 * Applies the filter to the specified context.
 	 *
@@ -97,49 +95,40 @@ this.createjs = this.createjs || {};
 	 * @param {Number} y The y position to use for the source rect.
 	 * @param {Number} width The width to use for the source rect.
 	 * @param {Number} height The height to use for the source rect.
-	 * @param {CanvasRenderingContext2D} [targetCtx] The 2D context to draw the result to. Defaults to the context passed to ctx.
-	 * @param {Number} [targetX] The x position to draw the result to. Defaults to the value passed to x.
-	 * @param {Number} [targetY] The y position to draw the result to. Defaults to the value passed to y.
+	 * @param {CanvasRenderingContext2D} [targetCtx] NOT SUPPORTED IN THIS FILTER. The 2D context to draw the result to. Defaults to the context passed to ctx.
+	 * @param {Number} [targetX] NOT SUPPORTED IN THIS FILTER. The x position to draw the result to. Defaults to the value passed to x.
+	 * @param {Number} [targetY] NOT SUPPORTED IN THIS FILTER. The y position to draw the result to. Defaults to the value passed to y.
 	 * @return {Boolean} If the filter was applied successfully.
 	 **/
 	p.applyFilter = function (ctx, x, y, width, height, targetCtx, targetX, targetY) {
-		if (!this.mask) {
-			return true;
-		}
+		if (!this.mask) { return true; }
 		targetCtx = targetCtx || ctx;
-		if (targetX == null) {
-			targetX = x;
-		}
-		if (targetY == null) {
-			targetY = y;
-		}
+		if (targetX == null) { targetX = x; }
+		if (targetY == null) { targetY = y; }
 
 		targetCtx.save();
 		if (ctx != targetCtx) {
 			// TODO: support targetCtx and targetX/Y
 			// clearRect, then draw the ctx in?
+			return false;
 		}
 
 		targetCtx.globalCompositeOperation = "destination-in";
 		targetCtx.drawImage(this.mask, targetX, targetY);
 		targetCtx.restore();
 		return true;
-	}
+	};
 
-	/**
-	 * Returns a clone of this object.
-	 * @return {AlphaMaskFilter}
-	 **/
+	/** docced in super class **/
 	p.clone = function () {
 		return new AlphaMaskFilter(this.mask);
-	}
+	};
 
+	/** docced in super class **/
 	p.toString = function () {
 		return "[AlphaMaskFilter]";
-	}
-
-// private methods:
+	};
 
 
-	createjs.AlphaMaskFilter = AlphaMaskFilter;
+	createjs.AlphaMaskFilter = createjs.promote(AlphaMaskFilter, "Filter");
 }());

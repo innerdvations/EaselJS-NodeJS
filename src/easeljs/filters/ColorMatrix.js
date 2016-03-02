@@ -36,12 +36,14 @@ this.createjs = this.createjs||{};
 (function() {
 	"use strict";
 
+
+// constructor:
 	/**
-	 * Provides helper functions for assembling a matrix for use with the {{#crossLink "ColorMatrixFilter"}}{{/crossLink}},
-	 * or can be used directly as the matrix for a ColorMatrixFilter. Most methods return the instance to facilitate
-	 * chained calls.
+	 * Provides helper functions for assembling a matrix for use with the {{#crossLink "ColorMatrixFilter"}}{{/crossLink}}.
+	 * Most methods return the instance to facilitate chained calls.
 	 *
 	 * <h4>Example</h4>
+	 *
 	 *      myColorMatrix.adjustHue(20).adjustBrightness(50);
 	 *
 	 * See {{#crossLink "Filter"}}{{/crossLink}} for an example of how to apply filters, or {{#crossLink "ColorMatrixFilter"}}{{/crossLink}}
@@ -52,13 +54,27 @@ this.createjs = this.createjs||{};
 	 * @param {Number} saturation
 	 * @param {Number} hue
 	 * @constructor
-	 * @extends Array
 	 **/
-	var ColorMatrix = function(brightness, contrast, saturation, hue) {
-	  this.initialize(brightness, contrast, saturation, hue);
-	};
-	var p = ColorMatrix.prototype = [];
+	function ColorMatrix(brightness, contrast, saturation, hue) {
+		this.setColor(brightness, contrast, saturation, hue);
+	}
+	var p = ColorMatrix.prototype;
 
+	/**
+	 * <strong>REMOVED</strong>. Removed in favor of using `MySuperClass_constructor`.
+	 * See {{#crossLink "Utility Methods/extend"}}{{/crossLink}} and {{#crossLink "Utility Methods/promote"}}{{/crossLink}}
+	 * for details.
+	 *
+	 * There is an inheritance tutorial distributed with EaselJS in /tutorials/Inheritance.
+	 *
+	 * @method initialize
+	 * @protected
+	 * @deprecated
+	 */
+	// p.initialize = function() {}; // searchable for devs wondering where it is.
+
+
+// constants:
 	/**
 	 * Array of delta values for contrast calculations.
 	 * @property DELTA_INDEX
@@ -105,28 +121,29 @@ this.createjs = this.createjs||{};
 	ColorMatrix.LENGTH = ColorMatrix.IDENTITY_MATRIX.length;
 
 
+// public methods:
 	/**
-	 * Initialization method.
-	 * @method initialize
+	 * Resets the instance with the specified values.
+	 * @method setColor
 	 * @param {Number} brightness
 	 * @param {Number} contrast
 	 * @param {Number} saturation
 	 * @param {Number} hue
-	 * @protected
+	 * @return {ColorMatrix} The ColorMatrix instance the method is called on (useful for chaining calls.)
+	 * @chainable
 	 */
-	p.initialize = function(brightness,contrast,saturation,hue) {
-		this.reset();
-		this.adjustColor(brightness,contrast,saturation,hue);
-		return this;
+	p.setColor = function(brightness,contrast,saturation,hue) {
+		return this.reset().adjustColor(brightness,contrast,saturation,hue);
 	};
 
 	/**
 	 * Resets the matrix to identity values.
 	 * @method reset
 	 * @return {ColorMatrix} The ColorMatrix instance the method is called on (useful for chaining calls.)
+	 * @chainable
 	 */
 	p.reset = function() {
-		return this.copyMatrix(ColorMatrix.IDENTITY_MATRIX);
+		return this.copy(ColorMatrix.IDENTITY_MATRIX);
 	};
 
 	/**
@@ -139,6 +156,7 @@ this.createjs = this.createjs||{};
 	 * @param {Number} saturation
 	 * @param {Number} hue
 	 * @return {ColorMatrix} The ColorMatrix instance the method is called on (useful for chaining calls.)
+	 * @chainable
 	 **/
 	p.adjustColor = function(brightness,contrast,saturation,hue) {
 		this.adjustHue(hue);
@@ -153,6 +171,7 @@ this.createjs = this.createjs||{};
 	 * @method adjustBrightness
 	 * @param {Number} value A value between -255 & 255 that will be added to the RGB channels.
 	 * @return {ColorMatrix} The ColorMatrix instance the method is called on (useful for chaining calls.)
+	 * @chainable
 	 **/
 	p.adjustBrightness = function(value) {
 		if (value == 0 || isNaN(value)) { return this; }
@@ -173,6 +192,7 @@ this.createjs = this.createjs||{};
 	 * @method adjustContrast
 	 * @param {Number} value A value between -100 & 100.
 	 * @return {ColorMatrix} The ColorMatrix instance the method is called on (useful for chaining calls.)
+	 * @chainable
 	 **/
 	p.adjustContrast = function(value) {
 		if (value == 0 || isNaN(value)) { return this; }
@@ -205,6 +225,7 @@ this.createjs = this.createjs||{};
 	 * @method adjustSaturation
 	 * @param {Number} value A value between -100 & 100.
 	 * @return {ColorMatrix} The ColorMatrix instance the method is called on (useful for chaining calls.)
+	 * @chainable
 	 **/
 	p.adjustSaturation = function(value) {
 		if (value == 0 || isNaN(value)) { return this; }
@@ -229,6 +250,7 @@ this.createjs = this.createjs||{};
 	 * @method adjustHue
 	 * @param {Number} value A value between -180 & 180.
 	 * @return {ColorMatrix} The ColorMatrix instance the method is called on (useful for chaining calls.)
+	 * @chainable
 	 **/
 	p.adjustHue = function(value) {
 		if (value == 0 || isNaN(value)) { return this; }
@@ -253,6 +275,7 @@ this.createjs = this.createjs||{};
 	 * @method concat
 	 * @param {Array} matrix An array or ColorMatrix instance.
 	 * @return {ColorMatrix} The ColorMatrix instance the method is called on (useful for chaining calls.)
+	 * @chainable
 	 **/
 	p.concat = function(matrix) {
 		matrix = this._fixMatrix(matrix);
@@ -267,7 +290,7 @@ this.createjs = this.createjs||{};
 	 * @return {ColorMatrix} A clone of this ColorMatrix.
 	 **/
 	p.clone = function() {
-		return new ColorMatrix(this);
+		return (new ColorMatrix()).copy(this);
 	};
 
 	/**
@@ -276,40 +299,54 @@ this.createjs = this.createjs||{};
 	 * @return {Array} An array holding this matrix's values.
 	 **/
 	p.toArray = function() {
-		return this.slice(0,ColorMatrix.LENGTH);
+		var arr = [];
+		for (var i= 0, l=ColorMatrix.LENGTH; i<l; i++) {
+			arr[i] = this[i];
+		}
+		return arr;
 	};
 
 	/**
 	 * Copy the specified matrix's values to this matrix.
-	 * @method copyMatrix
+	 * @method copy
 	 * @param {Array} matrix An array or ColorMatrix instance.
 	 * @return {ColorMatrix} The ColorMatrix instance the method is called on (useful for chaining calls.)
+	 * @chainable
 	 **/
-	p.copyMatrix = function(matrix) {
+	p.copy = function(matrix) {
 		var l = ColorMatrix.LENGTH;
 		for (var i=0;i<l;i++) {
 			this[i] = matrix[i];
 		}
 		return this;
 	};
+	
+	/**
+	 * Returns a string representation of this object.
+	 * @method toString
+	 * @return {String} a string representation of the instance.
+	 **/
+	p.toString = function() {
+		return "[ColorMatrix]";
+	};
+
 
 // private methods:
-
 	/**
 	 * @method _multiplyMatrix
 	 * @param {Array} matrix
 	 * @protected
 	 **/
 	p._multiplyMatrix = function(matrix) {
-		var col = [];
+		var i, j, k, col = [];
 
-		for (var i=0;i<5;i++) {
-			for (var j=0;j<5;j++) {
+		for (i=0;i<5;i++) {
+			for (j=0;j<5;j++) {
 				col[j] = this[j+i*5];
 			}
-			for (var j=0;j<5;j++) {
+			for (j=0;j<5;j++) {
 				var val=0;
-				for (var k=0;k<5;k++) {
+				for (k=0;k<5;k++) {
 					val += matrix[j+k*5]*col[k];
 				}
 				this[j+i*5] = val;
@@ -328,7 +365,6 @@ this.createjs = this.createjs||{};
 		return Math.min(limit,Math.max(-limit,value));
 	};
 
-	//
 	/**
 	 * Makes sure matrixes are 5x5 (25 long).
 	 * @method _fixMatrix
@@ -336,7 +372,7 @@ this.createjs = this.createjs||{};
 	 * @protected
 	 **/
 	p._fixMatrix = function(matrix) {
-		if (matrix instanceof ColorMatrix) { matrix = matrix.slice(0); }
+		if (matrix instanceof ColorMatrix) { matrix = matrix.toArray(); }
 		if (matrix.length < ColorMatrix.LENGTH) {
 			matrix = matrix.slice(0,matrix.length).concat(ColorMatrix.IDENTITY_MATRIX.slice(matrix.length,ColorMatrix.LENGTH));
 		} else if (matrix.length > ColorMatrix.LENGTH) {
@@ -345,6 +381,6 @@ this.createjs = this.createjs||{};
 		return matrix;
 	};
 
-	createjs.ColorMatrix = ColorMatrix;
 
+	createjs.ColorMatrix = ColorMatrix;
 }());

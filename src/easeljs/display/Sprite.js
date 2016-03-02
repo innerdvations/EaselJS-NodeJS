@@ -36,35 +36,147 @@ this.createjs = this.createjs||{};
 (function() {
 	"use strict";
 
-/**
- * Displays a frame or sequence of frames (ie. an animation) from a SpriteSheet instance. A sprite sheet is a series of
- * images (usually animation frames) combined into a single image. For example, an animation consisting of 8 100x100
- * images could be combined into a 400x200 sprite sheet (4 frames across by 2 high). You can display individual frames,
- * play frames as an animation, and even sequence animations together.
- *
- * See the {{#crossLink "SpriteSheet"}}{{/crossLink}} class for more information on setting up frames and animations.
- *
- * <h4>Example</h4>
- *      var instance = new createjs.Sprite(spriteSheet);
- *      instance.gotoAndStop("frameName");
- *
- * Until {{#crossLink "Sprite/gotoAndStop"}}{{/crossLink}} or {{#crossLink "Sprite/gotoAndPlay"}}{{/crossLink}} is called,
- * only the first defined frame defined in the sprite sheet will be displayed.
- *
- * @class Sprite
- * @extends DisplayObject
- * @constructor
- * @param {SpriteSheet} spriteSheet The SpriteSheet instance to play back. This includes the source image(s), frame
- * dimensions, and frame data. See {{#crossLink "SpriteSheet"}}{{/crossLink}} for more information.
- * @param {String|Number} frameOrAnimation The frame number or animation to play initially.
- **/
-var Sprite = function(spriteSheet, frameOrAnimation) {
-  this.initialize(spriteSheet, frameOrAnimation);
-};
-var p = Sprite.prototype = new createjs.DisplayObject();
+
+// constructor:
+	/**
+	 * Displays a frame or sequence of frames (ie. an animation) from a SpriteSheet instance. A sprite sheet is a series of
+	 * images (usually animation frames) combined into a single image. For example, an animation consisting of 8 100x100
+	 * images could be combined into a 400x200 sprite sheet (4 frames across by 2 high). You can display individual frames,
+	 * play frames as an animation, and even sequence animations together.
+	 *
+	 * See the {{#crossLink "SpriteSheet"}}{{/crossLink}} class for more information on setting up frames and animations.
+	 *
+	 * <h4>Example</h4>
+	 *
+	 *      var instance = new createjs.Sprite(spriteSheet);
+	 *      instance.gotoAndStop("frameName");
+	 *
+	 * Until {{#crossLink "Sprite/gotoAndStop"}}{{/crossLink}} or {{#crossLink "Sprite/gotoAndPlay"}}{{/crossLink}} is called,
+	 * only the first defined frame defined in the sprite sheet will be displayed.
+	 *
+	 * @class Sprite
+	 * @extends DisplayObject
+	 * @constructor
+	 * @param {SpriteSheet} spriteSheet The SpriteSheet instance to play back. This includes the source image(s), frame
+	 * dimensions, and frame data. See {{#crossLink "SpriteSheet"}}{{/crossLink}} for more information.
+	 * @param {String|Number} [frameOrAnimation] The frame number or animation to play initially.
+	 **/
+	function Sprite(spriteSheet, frameOrAnimation) {
+		this.DisplayObject_constructor();
+		
+		
+	// public properties:
+		/**
+		 * The frame index that will be drawn when draw is called. Note that with some {{#crossLink "SpriteSheet"}}{{/crossLink}}
+		 * definitions, this will advance non-sequentially. This will always be an integer value.
+		 * @property currentFrame
+		 * @type {Number}
+		 * @default 0
+		 * @readonly
+		 **/
+		this.currentFrame = 0;
+	
+		/**
+		 * Returns the name of the currently playing animation.
+		 * @property currentAnimation
+		 * @type {String}
+		 * @final
+		 * @readonly
+		 **/
+		this.currentAnimation = null;
+	
+		/**
+		 * Prevents the animation from advancing each tick automatically. For example, you could create a sprite
+		 * sheet of icons, set paused to true, and display the appropriate icon by setting <code>currentFrame</code>.
+		 * @property paused
+		 * @type {Boolean}
+		 * @default false
+		 **/
+		this.paused = true;
+	
+		/**
+		 * The SpriteSheet instance to play back. This includes the source image, frame dimensions, and frame
+		 * data. See {{#crossLink "SpriteSheet"}}{{/crossLink}} for more information.
+		 * @property spriteSheet
+		 * @type {SpriteSheet}
+		 * @readonly
+		 **/
+		this.spriteSheet = spriteSheet;
+	
+		/**
+		 * Specifies the current frame index within the currently playing animation. When playing normally, this will increase
+		 * from 0 to n-1, where n is the number of frames in the current animation.
+		 *
+		 * This could be a non-integer value if
+		 * using time-based playback (see {{#crossLink "Sprite/framerate"}}{{/crossLink}}, or if the animation's speed is
+		 * not an integer.
+		 * @property currentAnimationFrame
+		 * @type {Number}
+		 * @default 0
+		 **/
+		this.currentAnimationFrame = 0;
+	
+		/**
+		 * By default Sprite instances advance one frame per tick. Specifying a framerate for the Sprite (or its related
+		 * SpriteSheet) will cause it to advance based on elapsed time between ticks as appropriate to maintain the target
+		 * framerate.
+		 *
+		 * For example, if a Sprite with a framerate of 10 is placed on a Stage being updated at 40fps, then the Sprite will
+		 * advance roughly one frame every 4 ticks. This will not be exact, because the time between each tick will
+		 * vary slightly between frames.
+		 *
+		 * This feature is dependent on the tick event object (or an object with an appropriate "delta" property) being
+		 * passed into {{#crossLink "Stage/update"}}{{/crossLink}}.
+		 * @property framerate
+		 * @type {Number}
+		 * @default 0
+		 **/
+		this.framerate = 0;
+	
+	
+	// private properties:
+		/**
+		 * Current animation object.
+		 * @property _animation
+		 * @protected
+		 * @type {Object}
+		 * @default null
+		 **/
+		this._animation = null;
+	
+		/**
+		 * Current frame index.
+		 * @property _currentFrame
+		 * @protected
+		 * @type {Number}
+		 * @default null
+		 **/
+		this._currentFrame = null;
+		
+		/**
+		 * Skips the next auto advance. Used by gotoAndPlay to avoid immediately jumping to the next frame
+		 * @property _skipAdvance
+		 * @protected
+		 * @type {Boolean}
+		 * @default false
+		 **/
+		this._skipAdvance = false;
+		
+		
+		if (frameOrAnimation != null) { this.gotoAndPlay(frameOrAnimation); }
+	}
+	var p = createjs.extend(Sprite, createjs.DisplayObject);
+
+	/**
+	 * Constructor alias for backwards compatibility. This method will be removed in future versions.
+	 * Subclasses should be updated to use {{#crossLink "Utility Methods/extends"}}{{/crossLink}}.
+	 * @method initialize
+	 * @deprecated in favour of `createjs.promote()`
+	 **/
+	p.initialize = Sprite; // TODO: Deprecated. This is for backwards support of FlashCC spritesheet export.
+
 
 // events:
-
 	/**
 	 * Dispatched when an animation reaches its ends.
 	 * @event animationend
@@ -74,144 +186,17 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 	 * @param {String} next The name of the next animation that will be played, or null. This will be the same as name if the animation is looping.
 	 * @since 0.6.0
 	 */
-
-// public properties:
-	// TODO: deprecated.
+	 
 	/**
-	 * REMOVED. Use {{#crossLink "EventDispatcher/addEventListener"}}{{/crossLink}} and the {{#crossLink "Sprite/animationend:event"}}{{/crossLink}}
-	 * event.
-	 * @property onAnimationEnd
-	 * @type {Function}
-	 * @deprecated Use addEventListener and the "animationend" event.
+	 * Dispatched any time the current frame changes. For example, this could be due to automatic advancement on a tick,
+	 * or calling gotoAndPlay() or gotoAndStop().
+	 * @event change
+	 * @param {Object} target The object that dispatched the event.
+	 * @param {String} type The event type.
 	 */
 
-	/**
-	 * The frame index that will be drawn when draw is called. Note that with some {{#crossLink "SpriteSheet"}}{{/crossLink}}
-	 * definitions, this will advance non-sequentially. This will always be an integer value.
-	 * @property currentFrame
-	 * @type {Number}
-	 * @default 0
-	 * @readonly
-	 **/
-	p.currentFrame = 0;
 
-	/**
-	 * Returns the name of the currently playing animation.
-	 * @property currentAnimation
-	 * @type {String}
-	 * @final
-	 * @readonly
-	 **/
-	p.currentAnimation = null;
-
-	/**
-	 * Prevents the animation from advancing each tick automatically. For example, you could create a sprite
-	 * sheet of icons, set paused to true, and display the appropriate icon by setting <code>currentFrame</code>.
-	 * @property paused
-	 * @type {Boolean}
-	 * @default false
-	 **/
-	p.paused = true;
-
-	/**
-	 * The SpriteSheet instance to play back. This includes the source image, frame dimensions, and frame
-	 * data. See {{#crossLink "SpriteSheet"}}{{/crossLink}} for more information.
-	 * @property spriteSheet
-	 * @type {SpriteSheet}
-	 * @readonly
-	 **/
-	p.spriteSheet = null;
-
-	/**
-	 * Whether or not the image should be draw to the canvas at whole pixel coordinates.
-	 * @property snapToPixel
-	 * @type {Boolean}
-	 * @default true
-	 **/
-	p.snapToPixel = true;
-
-	/**
-	 * @property offset
-	 * @type {Number}
-	 * @default 0
-	 * @deprecated Not applicable to the new timing model in v0.7.0 and higher.
-	 */
-	p.offset = 0;
-
-	/**
-	 * Specifies the current frame index within the currently playing animation. When playing normally, this will increase
-	 * from 0 to n-1, where n is the number of frames in the current animation.
-	 *
-	 * This could be a non-integer value if
-	 * using time-based playback (see {{#crossLink "Sprite/framerate"}}{{/crossLink}}, or if the animation's speed is
-	 * not an integer.
-	 * @property currentAnimationFrame
-	 * @type {Number}
-	 * @default 0
-	 **/
-	p.currentAnimationFrame = 0;
-
-	/**
-	 * By default Sprite instances advance one frame per tick. Specifying a framerate for the Sprite (or its related
-	 * SpriteSheet) will cause it to advance based on elapsed time between ticks as appropriate to maintain the target
-	 * framerate.
-	 *
-	 * For example, if a Sprite with a framerate of 10 is placed on a Stage being updated at 40fps, then the Sprite will
-	 * advance roughly one frame every 4 ticks. This will not be exact, because the time between each tick will
-	 * vary slightly between frames.
-	 *
-	 * This feature is dependent on the tick event object (or an object with an appropriate "delta" property) being
-	 * passed into {{#crossLink "Stage/update"}}{{/crossLink}}.
-	 * @property framerate
-	 * @type {Number}
-	 * @default 0
-	 **/
-	p.framerate = 0;
-
-// private properties:
-	/**
-	 * @property _advanceCount
-	 * @protected
-	 * @type {Number}
-	 * @default 0
-	 **/
-	p._advanceCount = 0;
-
-	/**
-	 * @property _animation
-	 * @protected
-	 * @type {Object}
-	 * @default null
-	 **/
-	p._animation = null;
-
-	/**
-	 * @property _animation
-	 * @protected
-	 * @type {Object}
-	 * @default null
-	 **/
-	p._currentFrame = null;
-
-// constructor:
-	/**
-	 * @property DisplayObject_initialize
-	 * @type {Function}
-	 * @private
-	 **/
-	p.DisplayObject_initialize = p.initialize;
-
-	/**
-	 * Initialization method.
-	 * @method initialize
-	 * @protected
-	*/
-	p.initialize = function(spriteSheet, frameOrAnimation) {
-		this.DisplayObject_initialize();
-		this.spriteSheet = spriteSheet;
-		if (frameOrAnimation) { this.gotoAndPlay(frameOrAnimation); }
-	};
-
+// public methods:
 	/**
 	 * Returns true or false indicating whether the display object would be visible if drawn to a canvas.
 	 * This does not account for whether it would be visible within the boundaries of the stage.
@@ -223,13 +208,6 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 		var hasContent = this.cacheCanvas || this.spriteSheet.complete;
 		return !!(this.visible && this.alpha > 0 && this.scaleX != 0 && this.scaleY != 0 && hasContent);
 	};
-
-	/**
-	 * @property DisplayObject_draw
-	 * @type {Function}
-	 * @private
-	 **/
-	p.DisplayObject_draw = p.draw;
 
 	/**
 	 * Draws the display object into the specified context ignoring its visible, alpha, shadow, and transform.
@@ -247,7 +225,7 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 		var o = this.spriteSheet.getFrame(this._currentFrame|0);
 		if (!o) { return false; }
 		var rect = o.rect;
-		ctx.drawImage(o.image, rect.x, rect.y, rect.width, rect.height, -o.regX, -o.regY, rect.width, rect.height);
+		if (rect.width && rect.height) { ctx.drawImage(o.image, rect.x, rect.y, rect.width, rect.height, -o.regX, -o.regY, rect.width, rect.height); }
 		return true;
 	};
 
@@ -255,20 +233,20 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 	//Bitmap. This is why they have no method implementations.
 
 	/**
-	 * Because the content of a Bitmap is already in a simple format, cache is unnecessary for Bitmap instances.
-	 * You should not cache Bitmap instances as it can degrade performance.
+	 * Because the content of a Sprite is already in a raster format, cache is unnecessary for Sprite instances.
+	 * You should not cache Sprite instances as it can degrade performance.
 	 * @method cache
 	 **/
 
 	/**
-	 * Because the content of a Bitmap is already in a simple format, cache is unnecessary for Bitmap instances.
-	 * You should not cache Bitmap instances as it can degrade performance.
+	 * Because the content of a Sprite is already in a raster format, cache is unnecessary for Sprite instances.
+	 * You should not cache Sprite instances as it can degrade performance.
 	 * @method updateCache
 	 **/
 
 	/**
-	 * Because the content of a Bitmap is already in a simple format, cache is unnecessary for Bitmap instances.
-	 * You should not cache Bitmap instances as it can degrade performance.
+	 * Because the content of a Sprite is already in a raster format, cache is unnecessary for Sprite instances.
+	 * You should not cache Sprite instances as it can degrade performance.
 	 * @method uncache
 	 **/
 
@@ -300,6 +278,7 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 	 **/
 	p.gotoAndPlay = function(frameOrAnimation) {
 		this.paused = false;
+		this._skipAdvance = true;
 		this._goto(frameOrAnimation);
 	};
 
@@ -321,20 +300,10 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 	 * @method advance
 	*/
 	p.advance = function(time) {
-		var speed = (this._animation&&this._animation.speed)||1;
 		var fps = this.framerate || this.spriteSheet.framerate;
 		var t = (fps && time != null) ? time/(1000/fps) : 1;
-		if (this._animation) { this.currentAnimationFrame+=t*speed; }
-		else { this._currentFrame+=t*speed; }
-		this._normalizeFrame();
+		this._normalizeFrame(t);
 	};
-	
-	/**
-	 * @property DisplayObject_getBounds
-	 * @type Function
-	 * @protected
-	 **/
-	p.DisplayObject_getBounds = p.getBounds; 
 	
 	/**
 	 * Returns a {{#crossLink "Rectangle"}}{{/crossLink}} instance defining the bounds of the current frame relative to
@@ -358,9 +327,7 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 	 * @return {Sprite} a clone of the Sprite instance.
 	 **/
 	p.clone = function() {
-		var o = new Sprite(this.spriteSheet);
-		this.cloneProps(o);
-		return o;
+		return this._cloneProps(new Sprite(this.spriteSheet));
 	};
 
 	/**
@@ -374,23 +341,38 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 
 // private methods:
 	/**
-	 * @property DisplayObject__tick
-	 * @type {Function}
-	 * @private
+	 * @method _cloneProps
+	 * @param {Sprite} o
+	 * @return {Sprite} o
+	 * @protected
 	 **/
-	p.DisplayObject__tick = p._tick;
-
+	p._cloneProps = function(o) {
+		this.DisplayObject__cloneProps(o);
+		o.currentFrame = this.currentFrame;
+		o.currentAnimation = this.currentAnimation;
+		o.paused = this.paused;
+		o.currentAnimationFrame = this.currentAnimationFrame;
+		o.framerate = this.framerate;
+		
+		o._animation = this._animation;
+		o._currentFrame = this._currentFrame;
+		o._skipAdvance = this._skipAdvance;
+		return o;
+	};
+	
 	/**
 	 * Advances the <code>currentFrame</code> if paused is not true. This is called automatically when the {{#crossLink "Stage"}}{{/crossLink}}
 	 * ticks.
+	 * @param {Object} evtObj An event object that will be dispatched to all tick listeners. This object is reused between dispatchers to reduce construction & GC costs.
 	 * @protected
 	 * @method _tick
 	 **/
-	p._tick = function(params) {
+	p._tick = function(evtObj) {
 		if (!this.paused) {
-			this.advance(params&&params[0]&&params[0].delta);
+			if (!this._skipAdvance) { this.advance(evtObj&&evtObj.delta); }
+			this._skipAdvance = false;
 		}
-		this.DisplayObject__tick(params);
+		this.DisplayObject__tick(evtObj);
 	};
 
 
@@ -399,41 +381,50 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 	 * @protected
 	 * @method _normalizeFrame
 	 **/
-	p._normalizeFrame = function() {
+	p._normalizeFrame = function(frameDelta) {
+		frameDelta = frameDelta || 0;
 		var animation = this._animation;
 		var paused = this.paused;
 		var frame = this._currentFrame;
-		var animFrame = this.currentAnimationFrame;
 		var l;
-
+		
 		if (animation) {
+			var speed = animation.speed || 1;
+			var animFrame = this.currentAnimationFrame;
 			l = animation.frames.length;
-			if ((animFrame|0) >= l) {
+			if (animFrame + frameDelta * speed >= l) {
 				var next = animation.next;
-				if (this._dispatchAnimationEnd(animation, frame, paused, next, l-1)) {
-					// something changed in the event stack.
+				if (this._dispatchAnimationEnd(animation, frame, paused, next, l - 1)) {
+					// something changed in the event stack, so we shouldn't make any more changes here.
+					return;
 				} else if (next) {
-					// sequence. Automatically calls _normalizeFrame again.
-					return this._goto(next, animFrame - l);
+					// sequence. Automatically calls _normalizeFrame again with the remaining frames.
+					return this._goto(next, frameDelta - (l - animFrame) / speed);
 				} else {
 					// end.
 					this.paused = true;
-					animFrame = this.currentAnimationFrame = animation.frames.length-1;
-					this._currentFrame = animation.frames[animFrame];
+					animFrame = animation.frames.length - 1;
 				}
 			} else {
-				this._currentFrame = animation.frames[animFrame|0];
+				animFrame += frameDelta * speed;
 			}
+			this.currentAnimationFrame = animFrame;
+			this._currentFrame = animation.frames[animFrame | 0]
 		} else {
+			frame = (this._currentFrame += frameDelta);
 			l = this.spriteSheet.getNumFrames();
-			if (frame >= l) {
-				if (!this._dispatchAnimationEnd(animation, frame, paused, l-1)) {
+			if (frame >= l && l > 0) {
+				if (!this._dispatchAnimationEnd(animation, frame, paused, l - 1)) {
 					// looped.
 					if ((this._currentFrame -= l) >= l) { return this._normalizeFrame(); }
 				}
 			}
 		}
-		this.currentFrame = this._currentFrame|0;
+		frame = this._currentFrame | 0;
+		if (this.currentFrame != frame) {
+			this.currentFrame = frame;
+			this.dispatchEvent("change");
+		}
 	};
 
 	/**
@@ -451,32 +442,11 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 			evt.next = next;
 			this.dispatchEvent(evt);
 		}
-		// TODO: is this right?
-		if (!paused && this.paused) { this.currentAnimationFrame = end; }
-		return (this.paused != paused || this._animation != animation || this._currentFrame != frame);
-	};
-
-	/**
-	 * @property DisplayObject_cloneProps
-	 * @private
-	 * @type {Function}
-	 **/
-	p.DisplayObject_cloneProps = p.cloneProps;
-
-	/**
-	 * @method cloneProps
-	 * @param {Text} o
-	 * @protected
-	 **/
-	p.cloneProps = function(o) {
-		this.DisplayObject_cloneProps(o);
-		o.currentFrame = this.currentFrame;
-		o._currentFrame = this._currentFrame;
-		o.currentAnimation = this.currentAnimation;
-		o.paused = this.paused;
-		o._animation = this._animation;
-		o.currentAnimationFrame = this.currentAnimationFrame;
-		o.framerate = this.framerate;
+		// did the animation get changed in the event stack?:
+		var changed = (this._animation != animation || this._currentFrame != frame);
+		// if the animation hasn't changed, but the sprite was paused, then we want to stick to the last frame:
+		if (!changed && !paused && this.paused) { this.currentAnimationFrame = end; changed = true; }
+		return changed;
 	};
 
 	/**
@@ -487,21 +457,21 @@ var p = Sprite.prototype = new createjs.DisplayObject();
 	 * @protected
 	 **/
 	p._goto = function(frameOrAnimation, frame) {
+		this.currentAnimationFrame = 0;
 		if (isNaN(frameOrAnimation)) {
 			var data = this.spriteSheet.getAnimation(frameOrAnimation);
 			if (data) {
-				this.currentAnimationFrame = frame||0;
 				this._animation = data;
 				this.currentAnimation = frameOrAnimation;
-				this._normalizeFrame();
+				this._normalizeFrame(frame);
 			}
 		} else {
-			this.currentAnimationFrame = 0;
 			this.currentAnimation = this._animation = null;
 			this._currentFrame = frameOrAnimation;
 			this._normalizeFrame();
 		}
 	};
 
-createjs.Sprite = Sprite;
+
+	createjs.Sprite = createjs.promote(Sprite, "DisplayObject");
 }());
