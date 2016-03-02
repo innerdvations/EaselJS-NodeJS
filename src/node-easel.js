@@ -74,7 +74,6 @@ createjs = {
  */
 var fs = require('fs');
 var path = require('path');
-var sh = require("shelljs");
 var libs = ["createjs","easeljs","tweenjs"];
 var classes = [];
 var walk = require('walk');
