@@ -68,57 +68,73 @@ createjs = {
 	}
 };
 
-var classes = [
-	// Shared
-	'createjs/events/EventDispatcher',
-	'createjs/events/Event',
-	'createjs/utils/IndexOf',
+/**
+ * Require all createjs, easeljs, and tweenjs libraries dynamically for ease of updating
+ *
+ */
+var fs = require('fs');
+var path = require('path');
+var sh = require("shelljs");
+var libs = ["createjs","easeljs","tweenjs"];
+var classes = [];
+var walk = require('walk');
+// use priority to require base classes before dependent files
+var priority = {
+  "events":100,
+  "utils":90,
+  "DisplayObject.js":100,
+  "Container.js":90,
+  "Stage.js":80,
+  "Filter.js":70,
+  "version.js":-100,
+  "version_movieclip.js":-110
+};
 
-	// TweenJS code (used by MovieClip)
-	'tweenjs/CSSPlugin',
-	'tweenjs/Ease',
-	'tweenjs/MotionGuidePlugin',
-	'tweenjs/Timeline',
-	'tweenjs/Tween',
-	'tweenjs/version',
+var options = {
+  listeners: {
+    names: function(root, nodeNamesArray) {
+      nodeNamesArray.sort(function (a, b) {
+        // due to the way the walking works, directories need to be reverse sorted
+        var toggle = -1;
+        if(path.parse(a).ext) toggle = 1;
 
-	// EaselJS code
-	'easeljs/utils/UID',
-	'easeljs/utils/SpriteSheetBuilder',
-	'easeljs/utils/SpriteSheetUtils',
-	'easeljs/utils/Ticker',
-	'easeljs/events/MouseEvent',
-	'easeljs/geom/Matrix2D',
-	'easeljs/geom/Rectangle',
-	'easeljs/geom/Point',
-	'easeljs/display/DisplayObject',
-	'easeljs/display/Container',
-	'easeljs/display/Stage',
-	'easeljs/display/Shadow',
-	'easeljs/display/Shape',
-	'easeljs/display/SpriteSheet',
-	'easeljs/display/Sprite',
-	'easeljs/display/Text',
-	'easeljs/display/Bitmap',
-	'easeljs/display/BitmapText',
-	'easeljs/display/BitmapAnimation',
-	'easeljs/display/Graphics',
-	'easeljs/display/MovieClip',
-	'easeljs/filters/Filter',
-	'easeljs/filters/AlphaMapFilter',
-	'easeljs/filters/AlphaMaskFilter',
-	'easeljs/filters/BlurFilter',
-	'easeljs/filters/ColorFilter',
-	'easeljs/filters/ColorMatrix',
-	'easeljs/filters/ColorMatrixFilter',
-	'easeljs/version',
-	'easeljs/version_movieclip'
-];
+        var priorityA = 0, priorityB = 0;
+        if(priority.hasOwnProperty(a)) priorityA = priority[a];
+        if(priority.hasOwnProperty(b)) priorityB = priority[b];
+
+        // sort based on priority if different
+        if(priorityB < priorityA) return -1 * toggle;
+        if(priorityB > priorityA) return 1 * toggle;
+
+        // sort by alphabetical order if priorities are equal
+        if (a > b) return 1 * toggle;
+        if (a < b) return -1 * toggle;
+        return 0;
+      });
+    },
+    directories: function(root, dirStatsArray, next) {
+      next();
+    },
+    file: function(root, fileStats, next) {
+      classes.push(path.join(root, fileStats.name));
+      next();
+    },
+    errors: function(root, nodeStatsArray, next) {
+      next();
+    },
+    end: function() {
+    }
+  }
+};
+
+for(var i in libs) {
+  walk.walkSync( path.join(__dirname, libs[i]), options);
+}
 
 for (var i = 0; i < classes.length; i++) {
-	var path = classes[i];
-	var name = path.split('/').pop();
-	require('./' + path + '.js')[name];
+  var fn = classes[i];
+	var fp = path.parse(fn);
+	require(fn)[fp.name];
 };
 
 /**
